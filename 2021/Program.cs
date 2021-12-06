@@ -8,8 +8,8 @@ namespace _2021
         {
             try
             {
-                var day = new Day05();
-                Console.WriteLine(day.PartOne());
+                var day = new Day06();
+                //Console.WriteLine(day.PartOne());
                 Console.WriteLine(day.PartTwo());
                 Console.ReadKey();
             }
