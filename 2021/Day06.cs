@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace _2021
 {
-    public class Day06 : Day<int>
+    public class Day06 : Day<double>
     {
         private List<int> InitialState;
 
@@ -14,7 +14,7 @@ namespace _2021
             InitialState = Input.First().Split(',').Select(s => int.Parse(s)).ToList();
         }
 
-        public override int PartOne()
+        public override double PartOne()
         {
             return Enumerable.Range(0, 80).Aggregate(InitialState, (acc, curr) =>
             {
@@ -29,14 +29,15 @@ namespace _2021
             }).Count();
         }
 
-        public override int PartTwo()
+        public override double PartTwo()
         {
             var state = new double[9];
             foreach (var index in Enumerable.Range(0, 9))
             {
                 state[index] = InitialState.Count(s => s == index);
             }
-            var sum = Enumerable.Range(0, 256).Aggregate(state, (acc, curr) =>
+            
+            return Enumerable.Range(0, 256).Aggregate(state, (acc, curr) =>
             {
                 var zeros = acc[0];
                 var newState = new double[9];
@@ -45,7 +46,6 @@ namespace _2021
                 newState[8] = zeros;
                 return newState;
             }).Sum();
-            return -1;
         }
     }
 }
