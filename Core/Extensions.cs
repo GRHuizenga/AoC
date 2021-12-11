@@ -88,5 +88,33 @@ namespace Core
             var arr = @this.ToArray();
             return Enumerable.Range(0, @this.Count()).SelectMany(index => arr.Skip(index + 1).Select(entry => (arr[index], entry)));
         }
+
+
+        /// <summary>
+        /// Given a 1D index, return all 1d indices of the 4 or 8 neighbouring elements in the corresponding 2D square matrix with size.
+        /// </summary>
+        /// <param name="index1d"></param>
+        /// <param name="size"></param>
+        /// <param name="includeDiagonals">default true, when false only returns the North, South, East and West neighbours</param>
+        /// <returns></returns>
+        public static IEnumerable<int> GetNeighbouringIndices(this int index1d, int size, bool includeDiagonals = true)
+        {
+            var east = (index1d + 1) % size == 0 ? -1 : index1d + 1;
+            var west = index1d - 1 < 0 || (index1d - 1) % size == size - 1 ? -1 : index1d - 1;
+            
+            return new int[]
+            {
+                // N, E, S, W
+                index1d - size >= 0 ? index1d - size : -1,
+                east,
+                index1d + size < size * size ? index1d + size : -1,
+                west,
+                // NE, SE, SW, NW
+                includeDiagonals && east > -1 && east - size >= 0 ? east - size : -1,
+                includeDiagonals && east > -1 && east + size < size * size ? east + size : -1,
+                includeDiagonals && west > -1 && west + size < size * size ? west + size : -1,
+                includeDiagonals && west > -1 && west - size >= 0 ? west - size : -1,
+            }.Where(index => index > -1);
+        }
     }
 }
