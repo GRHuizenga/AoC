@@ -116,5 +116,13 @@ namespace Core
                 includeDiagonals && west > -1 && west - size >= 0 ? west - size : -1,
             }.Where(index => index > -1);
         }
+
+        public static IEnumerable<int> GetDownAndRightNeighbours(this int index1d, int size)
+        {
+            var neighbours = new List<int>();
+            if ((index1d + 1) % size != 0) neighbours.Add(index1d + 1);
+            if ((index1d + size) < (size * size)) neighbours.Add(index1d + size);
+            return neighbours.AsEnumerable();
+        }
     }
 }
