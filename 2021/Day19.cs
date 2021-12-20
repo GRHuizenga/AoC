@@ -20,24 +20,29 @@ namespace _2021
         {
             return -1;
         }
-    }
 
-    public class Scanner
-    {
-        public int ScannerId { get; private set; }
-        public List<(int x, int y, int z)> Vectors { get; private set; }
-
-        public Scanner(int identifier, IEnumerable<string> vectors)
-        {
-            ScannerId = identifier;
-            Vectors = vectors.Select(ToVector).ToList();
-        }
-
-        private Func<string, (int x, int y, int z)> ToVector = (string input) =>
+        private Func<string, Vector> ToVector = (string input) =>
         {
             var coordinates = input.Split(',');
-            return (int.Parse(coordinates[0]), int.Parse(coordinates[1]), int.Parse(coordinates[2]));
+            return new Vector(int.Parse(coordinates[0]), int.Parse(coordinates[1]), int.Parse(coordinates[2]));
         };
+    }
+
+    public record Scanner(int ScannerId, List<Vector> RelativeBeacons, Vector Position = default)
+    {
+        // when comparing scanners (scanner 0 == target, scanner X == source):
+        //
+        // from target.AbsoluteVectors t
+        // from source.RelativeVectors s
+        // offset = t - s
+        // set source.Position = offset
+        // check intersect between target.Absolute and source.Absolute >= 12
+        //
+        // do this for all orientations...or create a scanner with the same id and all beacons in 1 of the 24 orientations?
+        public IEnumerable<Vector> AbsoluteBeacons
+        {
+            get => RelativeBeacons.Select(beacon => beacon.Add(Position));
+        }
     }
 
     public record Vector(int X, int Y, int Z)
