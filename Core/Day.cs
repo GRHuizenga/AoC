@@ -8,7 +8,7 @@ namespace Core
 
         public Day(int year, string fileName)
         {
-            Input = System.IO.File.ReadLines($@"C:\git\AoC\{year}\PuzzleInputs\{fileName}.txt");
+            Input = System.IO.File.ReadLines($@"D:\AdventOfCode\{year}\PuzzleInputs\{fileName}.txt");
         }
 
         public abstract T PartOne();
