@@ -1,6 +1,7 @@
 ﻿using Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,9 +10,6 @@ namespace _2021
 {
     public class Day23
     {
-        private Amphipod[] Hallway;
-        private (Amphipod spot1, Amphipod spot2)[] Rooms;
-
         // Steps from any hallway position to the entrance of a room
         private int[][] Steps = new int[4][]
         {
@@ -42,43 +40,57 @@ namespace _2021
         ///     - once out of their room, they can only move into their destination room, but only if empty or only contains amphipods like themselves
         ///     - once out of their room in the hallway, they stay in that same spot until they can move into their destination room
         /// </summary>
-        public Day23()
-        {
-            Hallway = Enumerable.Repeat(Amphipod.None, 7).ToArray();
-            Rooms = new (Amphipod, Amphipod)[]
-            {
-                (Amphipod.C, Amphipod.B),
-                (Amphipod.D, Amphipod.A),
-                (Amphipod.D, Amphipod.B),
-                (Amphipod.A, Amphipod.C),
-            };
-        }
+        public Day23() { }
 
         public int PartOne()
         {
-            return Solve(Hallway, Rooms);
+            var hallway = Enumerable.Repeat(Amphipod.None, 7).ToArray();
+            var rooms = new Stack<Amphipod>[4];
+            rooms[0] = new Stack<Amphipod>(new[] { Amphipod.B, Amphipod.C });
+            rooms[1] = new Stack<Amphipod>(new[] { Amphipod.A, Amphipod.D });
+            rooms[2] = new Stack<Amphipod>(new[] { Amphipod.B, Amphipod.D });
+            rooms[3] = new Stack<Amphipod>(new[] { Amphipod.C, Amphipod.A });
+            
+            return Solve(hallway, rooms, 2);
         }
 
+        /// <summary>
+        ///     #############
+        ///     #..X.X.X.X..#
+        ///     ###C#D#D#A###
+        ///       #D#C#B#A#
+        ///       #D#B#A#C#
+        ///       #B#A#B#C#
+        ///       #########
+        /// </summary>
         public int PartTwo()
         {
-            return -1;
+            var hallway = Enumerable.Repeat(Amphipod.None, 7).ToArray();
+            var rooms = new Stack<Amphipod>[4];
+            rooms[0] = new Stack<Amphipod>(new[] { Amphipod.B, Amphipod.D, Amphipod.D, Amphipod.C });
+            rooms[1] = new Stack<Amphipod>(new[] { Amphipod.A, Amphipod.B, Amphipod.C, Amphipod.D });
+            rooms[2] = new Stack<Amphipod>(new[] { Amphipod.B, Amphipod.A, Amphipod.B, Amphipod.D });
+            rooms[3] = new Stack<Amphipod>(new[] { Amphipod.C, Amphipod.C, Amphipod.A, Amphipod.A });
+
+            return Solve(hallway, rooms, 4);
         }
 
         private Dictionary<(string, string), int> MemoizationCache = new();
 
-        private int Solve(Amphipod[] hallway, (Amphipod, Amphipod)[] rooms)
+        private int Solve(Amphipod[] hallway, Stack<Amphipod>[] rooms, int roomSize)
         {
             var hallwayStringRep = string.Join(string.Empty, hallway);
-            var roomsStringRep = string.Join(string.Empty, rooms.Select(room => $"{room.Item1}{room.Item2}"));
+            var roomsStringRep = string.Join(string.Empty, rooms.Select(room => string.Join(string.Empty, Enumerable.Repeat(Amphipod.None, roomSize - room.Count).Concat(room))));
+
             if (MemoizationCache.TryGetValue((hallwayStringRep, roomsStringRep), out var cachedCost)) return cachedCost;
 
-            if (IsFinalState(rooms)) return 0;
+            if (IsFinalState(rooms, roomSize)) return 0;
 
             var best = int.MaxValue;
 
-            foreach (var (cost, state) in Moves(hallway, rooms).ToList())
+            foreach (var (cost, state) in Moves(hallway, rooms, roomSize).ToList())
             {
-                var nCost = cost + Solve(state.hallway.ToArray(), state.rooms.ToArray());
+                var nCost = cost + Solve(state.hallway.ToArray(), state.rooms.ToArray(), roomSize);
                 if (nCost > 0 && nCost < best) best = nCost;
             }
 
@@ -87,10 +99,10 @@ namespace _2021
             return best;
         }
 
-        private IEnumerable<(int cost, (Amphipod[] hallway, (Amphipod, Amphipod)[] rooms))> Moves(Amphipod[] hallway, (Amphipod, Amphipod)[] rooms)
+        private IEnumerable<(int cost, (Amphipod[] hallway, Stack<Amphipod>[] rooms))> Moves(Amphipod[] hallway, Stack<Amphipod>[] rooms, int roomSize)
         {
-            foreach (var move in MoveToRoom(hallway, rooms)) yield return move;
-            foreach (var move in MoveToHallway(hallway, rooms)) yield return move;
+            foreach (var move in MoveToRoom(hallway, rooms, roomSize)) yield return move;
+            foreach (var move in MoveToHallway(hallway, rooms, roomSize)) yield return move;
         }
 
         /// <summary>
@@ -99,17 +111,17 @@ namespace _2021
         ///     2. check if path through the hallway is clear
         ///     3. calculate the cost of moving
         /// </summary>
-        private IEnumerable<(int cost, (Amphipod[] hallway, (Amphipod, Amphipod)[] rooms))> MoveToRoom(Amphipod[] hallway, (Amphipod spot1, Amphipod spot2)[] rooms)
+        private IEnumerable<(int cost, (Amphipod[] hallway, Stack<Amphipod>[] rooms))> MoveToRoom(Amphipod[] hallway, Stack<Amphipod>[] rooms, int roomSize)
         {
             // only consider non-empty hallway spots
             foreach (var (amphipod, hallwaySpot) in hallway.Select((amphipod, index) => (amphipod, index)).Where(h => h.amphipod != Amphipod.None).ToList())
             {
                 // get its destination room and see if it does not contain another type of amphipod
                 var room = rooms[(int)amphipod];
-                if (room.spot1 != Amphipod.None || (room.spot2 != Amphipod.None && room.spot2 != amphipod)) continue;
+                if (room.Any(pod => pod != amphipod)) continue;
 
                 // calulate the cost for moving from the hallway spot to the room
-                var cost = MoveCost(rooms, hallway, (int)amphipod, hallwaySpot, true);
+                var cost = MoveCost(rooms, hallway, (int)amphipod, hallwaySpot, roomSize, true);
 
                 // if its impossible to make the move, continue
                 if (cost == int.MaxValue) continue;
@@ -117,8 +129,10 @@ namespace _2021
                 // return cost + new state
                 var newHallway = new List<Amphipod>(hallway).ToArray();
                 newHallway[hallwaySpot] = Amphipod.None;
-                var newRooms = new List<(Amphipod, Amphipod)>(rooms).ToArray();
-                newRooms[(int)amphipod] = room.spot2 == Amphipod.None ? (Amphipod.None, amphipod) : (amphipod, room.spot2);
+                
+                // yeah...it's a stack...reverse it first...
+                var newRooms = rooms.Select(r => new Stack<Amphipod>(r.Reverse())).ToArray();
+                newRooms[(int)amphipod].Push(amphipod);
 
                 yield return (cost, (newHallway, newRooms));
             }
@@ -131,36 +145,35 @@ namespace _2021
         ///     3. calculate the cost of moving
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<(int cost, (Amphipod[] hallway, (Amphipod, Amphipod)[] rooms))> MoveToHallway(Amphipod[] hallway, (Amphipod spot1, Amphipod spot2)[] rooms)
+        private IEnumerable<(int cost, (Amphipod[] hallway, Stack<Amphipod>[] rooms))> MoveToHallway(Amphipod[] hallway, Stack<Amphipod>[] rooms, int roomSize)
         {
             // only consider rooms which do not contain only amphipods for whom this is the destination room
             foreach (var (room, roomSpot) in rooms.Select((room, index) => (room, index)).ToList())
             {
-                if (room.spot1 == Amphipod.None && room.spot2 == Amphipod.None) continue;
-                if (room.spot1 == Amphipod.None && (int)room.spot2 == roomSpot) continue;
-                if ((int)room.spot1 == roomSpot && (int)room.spot2 == roomSpot) continue;
+                if (room.Count == 0 || room.All(amphipod => (int)amphipod == roomSpot)) continue;
 
                 // for each destination hallway spot
                 foreach (var hallwaySpot in Enumerable.Range(0, 7))
                 {
                     // calculate the cost of moving there
-                    var cost = MoveCost(rooms, hallway, roomSpot, hallwaySpot);
+                    var cost = MoveCost(rooms, hallway, roomSpot, hallwaySpot, roomSize);
 
                     // if we cannot move there, continue
                     if (cost == int.MaxValue) continue;
 
                     // return cost and new state
                     var newHallway = new List<Amphipod>(hallway).ToArray();
-                    newHallway[hallwaySpot] = room.spot1 != Amphipod.None ? room.spot1 : room.spot2;
-                    var newRooms = new List<(Amphipod, Amphipod)>(rooms).ToArray();
-                    newRooms[roomSpot] = room.spot1 == Amphipod.None ? (Amphipod.None, Amphipod.None) : (Amphipod.None, room.spot2);
+                    newHallway[hallwaySpot] = room.Peek();
+                    // well, finding that missing reverse took me long enough...
+                    var newRooms = rooms.Select(r => new Stack<Amphipod>(r.Reverse())).ToArray();
+                    newRooms[roomSpot].Pop();
 
                     yield return (cost, (newHallway, newRooms));
                 }
             }
         }
 
-        private int MoveCost((Amphipod, Amphipod)[] rooms, Amphipod[] hallway, int roomSpot, int hallwaySpot, bool toRoom = false)
+        private int MoveCost(Stack<Amphipod>[] rooms, Amphipod[] hallway, int roomSpot, int hallwaySpot, int roomSize, bool toRoom = false)
         {
             var start = 0;
             var end = 0;
@@ -177,25 +190,14 @@ namespace _2021
 
             if (Enumerable.Range(start, (end - start) + 1).Any(hallwayIndex => hallway[hallwayIndex] != Amphipod.None)) return int.MaxValue;
 
-            var amphipod = toRoom ? hallway[hallwaySpot] : rooms[roomSpot].Item1 != Amphipod.None ? rooms[roomSpot].Item1 : rooms[roomSpot].Item2;
+            var amphipod = toRoom ? hallway[hallwaySpot] : rooms[roomSpot].Peek();
 
-            var steps = 0;
-            if (toRoom)
-            {
-                steps = rooms[roomSpot].Item2 == Amphipod.None ? 2 : 1;
-            }
-            else
-            {
-                steps = rooms[roomSpot].Item1 == Amphipod.None ? 2 : 1;
-            }
-
-            var cost = (int)Math.Pow(10, (int)amphipod) * (Steps[roomSpot][hallwaySpot] + steps);
-            return cost;
+            return (int)Math.Pow(10, (int)amphipod) * (Steps[roomSpot][hallwaySpot] + (roomSize - rooms[roomSpot].Count + (!toRoom ? 1 : 0)));
         }
 
-        private bool IsFinalState((Amphipod, Amphipod)[] rooms)
+        private bool IsFinalState(Stack<Amphipod>[] rooms, int roomSize)
         {
-            if (Enumerable.Range(0, 4).Any(roomSpot => (int)rooms[roomSpot].Item1 != roomSpot || (int)rooms[roomSpot].Item2 != roomSpot)) return false;
+            if (Enumerable.Range(0, 4).Any(room => rooms[room].Count != roomSize || rooms[room].Any(amphipod => (int)amphipod != room))) return false;
             return true;
         }
     }
