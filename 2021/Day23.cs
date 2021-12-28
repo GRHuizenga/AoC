@@ -64,8 +64,14 @@ namespace _2021
             return -1;
         }
 
+        private Dictionary<(string, string), int> MemoizationCache = new();
+
         private int Solve(Amphipod[] hallway, (Amphipod, Amphipod)[] rooms)
         {
+            var hallwayStringRep = string.Join(string.Empty, hallway);
+            var roomsStringRep = string.Join(string.Empty, rooms.Select(room => $"{room.Item1}{room.Item2}"));
+            if (MemoizationCache.TryGetValue((hallwayStringRep, roomsStringRep), out var cachedCost)) return cachedCost;
+
             if (IsFinalState(rooms)) return 0;
 
             var best = int.MaxValue;
@@ -75,6 +81,8 @@ namespace _2021
                 var nCost = cost + Solve(state.hallway.ToArray(), state.rooms.ToArray());
                 if (nCost > 0 && nCost < best) best = nCost;
             }
+
+            MemoizationCache.Add((hallwayStringRep, roomsStringRep), best);
 
             return best;
         }
