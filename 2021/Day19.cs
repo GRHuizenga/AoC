@@ -3,16 +3,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace _2021
 {
     public class Day19 : Day<int>
     {
-        public Day19() : base(2021, "test") { }
+        private List<Scanner> Scanners;
+
+        public Day19() : base(2021, "test")
+        {
+            Parse(Input);
+        }
 
         public override int PartOne()
         {
+            Locate();
             return -1;
         }
 
@@ -21,28 +28,109 @@ namespace _2021
             return -1;
         }
 
+        private void Locate()
+        {
+            var scanners = Scanners.ToList();
+            var locatedScanners = new HashSet<Scanner>();
+
+            locatedScanners.Add(scanners.First());
+            scanners.Remove(scanners.First());
+            var queue = new Queue<Scanner>(scanners);
+
+            while (queue.Any())
+            {
+                var target = queue.Dequeue();
+                foreach (var source in locatedScanners)
+                {
+                    var matches = source.Matches(target);
+                    if (matches.Any())
+                        foreach (var (sourceBeacon, targetBeacon) in matches)
+                        {
+                            Console.WriteLine($"{sourceBeacon.X},{sourceBeacon.Y},{sourceBeacon.Z}    =>  {targetBeacon.X},{targetBeacon.Y},{targetBeacon.Z}");
+                            targetBeacon.AllOrientations().First(orientation => sourceBeacon.Subtract(orientation));
+                        }
+                }
+            }
+        }
+
         private Func<string, Vector> ToVector = (string input) =>
         {
             var coordinates = input.Split(',');
             return new Vector(int.Parse(coordinates[0]), int.Parse(coordinates[1]), int.Parse(coordinates[2]));
         };
+
+        private void Parse(IEnumerable<string> input)
+        {
+            int id = 0;
+            List<Vector> beacons = new List<Vector>();
+            Scanners = new List<Scanner>();
+            foreach (var line in input)
+            {
+                if (line.StartsWith("---"))
+                {
+                    id = int.Parse(new Regex(@"(\d+)").Match(line).Groups[0].Value);
+                    beacons.Clear();
+                }
+                else if (string.IsNullOrEmpty(line))
+                {
+                    Scanners.Add(new Scanner(id, beacons.ToList()));
+                }
+                else
+                {
+                    beacons.Add(ToVector(line));
+                }
+            }
+        }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ScannerId"></param>
+    /// <param name="RelativeBeacons">vectors of all beacons relative to this scanner</param>
+    /// <param name="Position">position of the scanner, default is (0, 0, 0)</param>
     public record Scanner(int ScannerId, List<Vector> RelativeBeacons, Vector Position = default)
     {
         // when comparing scanners (scanner 0 == target, scanner X == source):
         //
-        // from target.AbsoluteVectors t
-        // from source.RelativeVectors s
+        // from target.AbsoluteBeacons t
+        // from source.RelativeBeacons s
         // offset = t - s
         // set source.Position = offset
         // check intersect between target.Absolute and source.Absolute >= 12
         //
         // do this for all orientations...or create a scanner with the same id and all beacons in 1 of the 24 orientations?
+        public void Compare(Scanner target)
+        {
+
+        }
+
+        public IEnumerable<(Vector a, Vector b)> Matches(Scanner other)
+        {
+            return RelativeBeacons
+                // all combinations of beacons between this scanner's beacons and the other scanner's beacons
+                .SelectMany(beacon => other.RelativeBeacons, (a, b) => (thisBeacon: a, otherBeacon: b))
+                // where for this pair
+                .Where(pair => 
+                    // the intersection of equal distances of pair.thisBeacon and pair.otherBeacon's distances in it's own scanner surrounding >= 11
+                    RelativeBeacons.Select(a => pair.thisBeacon.Distance(a))
+                        .Intersect(other.RelativeBeacons.Select(b => pair.otherBeacon.Distance(b)))
+                        .Count() >= 11);
+        }
+
+
         public IEnumerable<Vector> AbsoluteBeacons
         {
             get => RelativeBeacons.Select(beacon => beacon.Add(Position));
         }
+
+        /// <summary>
+        /// Convenience function to get all beacons transformed/translated into each orientation
+        /// </summary>
+        //public IEnumerable<(int orientation, IEnumerable<Vector> beacons)> BeaconsPerOrientation
+        //{
+        //    get => 
+        //}
     }
 
     public record Vector(int X, int Y, int Z)
