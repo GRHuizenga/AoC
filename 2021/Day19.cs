@@ -2,55 +2,66 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace _2021
 {
     public class Day19 : Day<int>
     {
-        private List<Scanner> Scanners;
+        private IEnumerable<Scanner> Scanners;
+        private IEnumerable<Scanner> LocatedScanners;
 
-        public Day19() : base(2021, "test")
+        public Day19() : base(2021, "day19")
         {
-            Parse(Input);
+            Scanners = Parse(Input);
+            LocatedScanners = Locate();
         }
 
         public override int PartOne()
         {
-            Locate();
-            return -1;
+            return LocatedScanners.SelectMany(scanner => scanner.AbsoluteBeacons).Distinct().Count();
         }
 
         public override int PartTwo()
         {
-            return -1;
+            var positions = LocatedScanners.Select(scanner => scanner.Position);
+            return positions
+                .SelectMany(positionA => positions, (positionA, positionB) => positionA.Distance(positionB))
+                .Max();
         }
 
-        private void Locate()
+        private IEnumerable<Scanner> Locate()
         {
-            var scanners = Scanners.ToList();
             var locatedScanners = new HashSet<Scanner>();
-
-            locatedScanners.Add(scanners.First());
-            scanners.Remove(scanners.First());
-            var queue = new Queue<Scanner>(scanners);
+            locatedScanners.Add(Scanners.First());
+            var queue = new Queue<Scanner>(Scanners.Skip(1).ToList());
 
             while (queue.Any())
             {
                 var target = queue.Dequeue();
-                foreach (var source in locatedScanners)
+                var located = false;
+                foreach (var source in locatedScanners.ToList())
                 {
                     var matches = source.Matches(target);
-                    if (matches.Any())
-                        foreach (var (sourceBeacon, targetBeacon) in matches)
-                        {
-                            Console.WriteLine($"{sourceBeacon.X},{sourceBeacon.Y},{sourceBeacon.Z}    =>  {targetBeacon.X},{targetBeacon.Y},{targetBeacon.Z}");
-                            targetBeacon.AllOrientations().First(orientation => sourceBeacon.Subtract(orientation));
-                        }
+                    if (matches.Any()) {
+                        located = true;
+                        // find the orientation of b where the difference (a - b@orientation) is equal for all matches
+                        // this is the position of the target scanner relative to the source scanner
+                        var or = Enumerable.Range(0, 24).First(orientation => matches.Select(match => match.a.Subtract(match.b.AllOrientations[orientation])).Distinct().Count() == 1);
+                        var scannerPos = matches.First().a.Subtract(matches.First().b.AllOrientations[or]);
+
+                        // update the found scanner with the orientation to apply and the position of the scanner
+                        locatedScanners.Add(target with { Orientation = or, Position = scannerPos });
+
+                        // we already found a match, no need to keep searching
+                        break;
+                    }
                 }
+                // if we couldn't find a match yet, queue it again. We might find a match after more scanners are located
+                if (!located) queue.Enqueue(target);
             }
+
+            return locatedScanners;
         }
 
         private Func<string, Vector> ToVector = (string input) =>
@@ -59,12 +70,12 @@ namespace _2021
             return new Vector(int.Parse(coordinates[0]), int.Parse(coordinates[1]), int.Parse(coordinates[2]));
         };
 
-        private void Parse(IEnumerable<string> input)
+        private IEnumerable<Scanner> Parse(IEnumerable<string> input)
         {
             int id = 0;
             List<Vector> beacons = new List<Vector>();
-            Scanners = new List<Scanner>();
-            foreach (var line in input)
+            var scanners = new List<Scanner>();
+            foreach (var line in input.Append(string.Empty))
             {
                 if (line.StartsWith("---"))
                 {
@@ -73,13 +84,14 @@ namespace _2021
                 }
                 else if (string.IsNullOrEmpty(line))
                 {
-                    Scanners.Add(new Scanner(id, beacons.ToList()));
+                    scanners.Add(new Scanner(id, beacons.ToList()));
                 }
                 else
                 {
                     beacons.Add(ToVector(line));
                 }
             }
+            return scanners;
         }
     }
 
@@ -89,31 +101,17 @@ namespace _2021
     /// <param name="ScannerId"></param>
     /// <param name="RelativeBeacons">vectors of all beacons relative to this scanner</param>
     /// <param name="Position">position of the scanner, default is (0, 0, 0)</param>
-    public record Scanner(int ScannerId, List<Vector> RelativeBeacons, Vector Position = default)
+    public record Scanner(int ScannerId, List<Vector> RelativeBeacons, int Orientation = default, Vector Position = default)
     {
-        // when comparing scanners (scanner 0 == target, scanner X == source):
-        //
-        // from target.AbsoluteBeacons t
-        // from source.RelativeBeacons s
-        // offset = t - s
-        // set source.Position = offset
-        // check intersect between target.Absolute and source.Absolute >= 12
-        //
-        // do this for all orientations...or create a scanner with the same id and all beacons in 1 of the 24 orientations?
-        public void Compare(Scanner target)
-        {
-
-        }
-
         public IEnumerable<(Vector a, Vector b)> Matches(Scanner other)
         {
-            return RelativeBeacons
-                // all combinations of beacons between this scanner's beacons and the other scanner's beacons
+            return AbsoluteBeacons
+                // all combinations of beacons between this scanner's absolute beacons (after applying the correct orientation and scanner position) and the other scanner's beacons
                 .SelectMany(beacon => other.RelativeBeacons, (a, b) => (thisBeacon: a, otherBeacon: b))
                 // where for this pair
                 .Where(pair => 
                     // the intersection of equal distances of pair.thisBeacon and pair.otherBeacon's distances in it's own scanner surrounding >= 11
-                    RelativeBeacons.Select(a => pair.thisBeacon.Distance(a))
+                    AbsoluteBeacons.Select(a => pair.thisBeacon.Distance(a))
                         .Intersect(other.RelativeBeacons.Select(b => pair.otherBeacon.Distance(b)))
                         .Count() >= 11);
         }
@@ -121,19 +119,11 @@ namespace _2021
 
         public IEnumerable<Vector> AbsoluteBeacons
         {
-            get => RelativeBeacons.Select(beacon => beacon.Add(Position));
+            get => RelativeBeacons.Select(beacon => beacon.AllOrientations[Orientation].Add(Position));
         }
-
-        /// <summary>
-        /// Convenience function to get all beacons transformed/translated into each orientation
-        /// </summary>
-        //public IEnumerable<(int orientation, IEnumerable<Vector> beacons)> BeaconsPerOrientation
-        //{
-        //    get => 
-        //}
     }
 
-    public record Vector(int X, int Y, int Z)
+    public record struct Vector(int X, int Y, int Z)
     {
         public Vector Subtract(Vector other) => new(X - other.X, Y - other.Y, Z - other.Z);
         public Vector Add(Vector other) => new(X + other.X, Y + other.Y, Z + other.Z);
@@ -179,9 +169,9 @@ namespace _2021
         /// Combining the previous 2 functions: all facing directions can be rotated 4 times: 24 orientations total.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Vector> AllOrientations()
+        public Vector[] AllOrientations
         {
-            return Directions().SelectMany(vector => vector.Rotations());
+            get => Directions().SelectMany(vector => vector.Rotations()).ToArray();
         }
     }
 }
