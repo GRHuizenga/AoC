@@ -11,7 +11,7 @@ namespace _2021
 
         public Day12() : base(2021, "day12")
         {
-            Connections = Input
+            Connections = InputLines
                 .SelectMany(connection =>
                 {
                     var caves = connection.Split('-');

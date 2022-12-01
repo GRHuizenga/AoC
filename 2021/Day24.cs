@@ -296,7 +296,7 @@ namespace _2021
         public override double PartOne()
         {
             var monad = Enumerable.Repeat(0, 14).ToArray();
-            foreach (var comparison in GetComparisons(Input.ToList()))
+            foreach (var comparison in GetComparisons(InputLines.ToList()))
             {
                 if (comparison.difference > 0)
                 {
@@ -319,7 +319,7 @@ namespace _2021
         public override double PartTwo()
         {
             var monad = Enumerable.Repeat(0, 14).ToArray();
-            foreach (var comparison in GetComparisons(Input.ToList()))
+            foreach (var comparison in GetComparisons(InputLines.ToList()))
             {
                 if (comparison.difference > 0)
                 {

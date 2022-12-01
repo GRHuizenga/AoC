@@ -11,7 +11,7 @@ namespace _2021
 
         public Day06() : base(2021, "day06")
         {
-            InitialState = Input.First().Split(',').Select(s => int.Parse(s)).ToList();
+            InitialState = InputLines.First().Split(',').Select(s => int.Parse(s)).ToList();
         }
 
         public override double PartOne()

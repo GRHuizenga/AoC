@@ -16,7 +16,7 @@ namespace _2021
 
         public Day25() : base(2021, "day25")
         {
-            Grid = Input.Select(line => line.ToCharArray()).ToArray();
+            Grid = InputLines.Select(line => line.ToCharArray()).ToArray();
             Width = Grid[0].Length;
             Height = Grid.Length;
             Coordinates = Enumerable.Range(0, Height).SelectMany(y => Enumerable.Range(0, Width), (y, x) => (y, x));

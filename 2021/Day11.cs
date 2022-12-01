@@ -25,7 +25,7 @@ namespace _2021
 
         private void ParseInput()
         {
-            Octopuses = Input
+            Octopuses = InputLines
                 .SelectMany(line => line.ToCharArray().Select(octopus => (int.Parse(octopus.ToString()), false)))
                 .ToArray();
         }

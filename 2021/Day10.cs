@@ -31,7 +31,7 @@ namespace _2021
         public override double PartOne()
         {
             var stack = new Stack<char>();
-            return Input.Aggregate(0, (acc, error) =>
+            return InputLines.Aggregate(0, (acc, error) =>
             {
                 stack.Clear();
                 foreach (var ch in error)
@@ -46,7 +46,7 @@ namespace _2021
 
         public override double PartTwo()
         {
-            var closingSequences = Input.Aggregate(new List<Stack<char>>(), (acc, error) =>
+            var closingSequences = InputLines.Aggregate(new List<Stack<char>>(), (acc, error) =>
             {
                 var stack = new Stack<char>();
                 foreach (var ch in error)

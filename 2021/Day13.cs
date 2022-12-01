@@ -60,12 +60,12 @@ namespace _2021
 
         private void ParseInput()
         {
-            Dots = Input
+            Dots = InputLines
                 .TakeWhile(line => !string.IsNullOrEmpty(line))
                 .Select(dot => (int.Parse(dot.Split(',')[0]), int.Parse(dot.Split(',')[1])))
                 .ToHashSet();
 
-            FoldInstructions = Input
+            FoldInstructions = InputLines
                 .Skip(Dots.Count() + 1)
                 .Select(instruction =>
                 {

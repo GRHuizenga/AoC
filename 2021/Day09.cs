@@ -13,8 +13,8 @@ namespace _2021
 
         public Day09() : base(2021, "day09")
         {
-            Size = Input.First().Count();
-            HeightMap = Input.SelectMany(c => c.ToCharArray().Select(d => int.Parse(d.ToString()))).ToArray();
+            Size = InputLines.First().Count();
+            HeightMap = InputLines.SelectMany(c => c.ToCharArray().Select(d => int.Parse(d.ToString()))).ToArray();
             Sinks = Enumerable.Range(0, HeightMap.Length)
                 .Where(index1D => HeightMap[index1D] < MinNeighbour(index1D).Item2);
         }

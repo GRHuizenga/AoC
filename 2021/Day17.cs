@@ -16,7 +16,7 @@ namespace _2021
         private int MaxTargetY;
 
         public Day17() : base(2021, "day17") {
-            var targets = Regex.Matches(Input.First(), @"(-?\d+)");
+            var targets = Regex.Matches(InputLines.First(), @"(-?\d+)");
             MinTargetX = int.Parse(targets.ElementAt(0).Value);
             MaxTargetX = int.Parse(targets.ElementAt(1).Value);
             MinTargetY = int.Parse(targets.ElementAt(2).Value);

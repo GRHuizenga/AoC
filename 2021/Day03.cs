@@ -11,7 +11,7 @@ namespace _2021
 
         public override int PartOne()
         {
-            var rates = Input
+            var rates = InputLines
                 .Select(bin => bin.ToCharArray()).Transpose().Select(bin =>
                 {
                     var ones = bin.Count(b => b == '1');
@@ -34,10 +34,10 @@ namespace _2021
 
         public override int PartTwo()
         {
-            var count = Input.First().Length;
+            var count = InputLines.First().Length;
             var lsr = new LifeSupportRating();
-            lsr.OxygenGeneratorRating = Input.Select(line => line);
-            lsr.Co2ScrubberRating = Input.Select(line => line);
+            lsr.OxygenGeneratorRating = InputLines.Select(line => line);
+            lsr.Co2ScrubberRating = InputLines.Select(line => line);
             var rates = Enumerable.Range(0, count).Aggregate(lsr, (acc, index) =>
             {
                 if (acc.OxygenGeneratorRating.Count() > 1)

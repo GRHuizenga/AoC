@@ -8,7 +8,7 @@ namespace _2021
         private PacketDecoder.Decoder PacketDecoder = new PacketDecoder.Decoder();
 
         public Day16() : base(2021, "day16") {
-            PacketDecoder.Decode(Input.First().ToCharArray());
+            PacketDecoder.Decode(InputLines.First().ToCharArray());
         }
 
         public override double PartOne()

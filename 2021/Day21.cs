@@ -83,8 +83,8 @@ namespace _2021
 
         private void ParseInput()
         {
-            PlayerOne = (int.Parse(Input.First().Last().ToString()), 0);
-            PlayerTwo = (int.Parse(Input.Last().Last().ToString()), 0);
+            PlayerOne = (int.Parse(InputLines.First().Last().ToString()), 0);
+            PlayerTwo = (int.Parse(InputLines.Last().Last().ToString()), 0);
         }
     }
 }

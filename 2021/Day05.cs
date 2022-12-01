@@ -30,7 +30,7 @@ namespace _2021
 
         private IEnumerable<Point> GetPoints(bool includeDiagonal = false)
         {
-            return Input
+            return InputLines
                 .Select(line => AllDigits.Matches(line).Select(match => int.Parse(match.Value)).ToArray())
                 .Where(points => includeDiagonal || (points[0] == points[2] || points[1] == points[3]))
                 .SelectMany(points => Geometry.GetPointsOnLine(points[0], points[1], points[2], points[3]));

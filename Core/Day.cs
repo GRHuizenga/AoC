@@ -4,11 +4,16 @@ namespace Core
 {
     public abstract class Day<T>
     {
-        protected IEnumerable<string> Input;
+        private readonly int Year;
+        private readonly string FileName;
 
-        public Day(int year, string fileName)
+        protected string Input => System.IO.File.ReadAllText($@"C:\AoC\{Year}\PuzzleInputs\{FileName}.txt");
+        protected IEnumerable<string> InputLines => System.IO.File.ReadLines($@"C:\AoC\{Year}\PuzzleInputs\{FileName}.txt");
+
+        protected Day(int year, string fileName)
         {
-            Input = System.IO.File.ReadLines($@"C:\git\AoC\{year}\PuzzleInputs\{fileName}.txt");
+            Year = year;
+            FileName = fileName;
         }
 
         public abstract T PartOne();

@@ -14,8 +14,8 @@ namespace _2021
 
         public Day20() : base(2021, "day20")
         {
-            EnhancementAlgorithm = Input.First();
-            var image = Input.Skip(2).Select(row => row.ToCharArray()).ToArray();
+            EnhancementAlgorithm = InputLines.First();
+            var image = InputLines.Skip(2).Select(row => row.ToCharArray()).ToArray();
 
             Image = new();
             foreach (var col in Enumerable.Range(0, image.Length))

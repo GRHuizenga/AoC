@@ -11,9 +11,9 @@ namespace _2021
 
         public override double PartOne()
         {
-            var finalSum = Input
+            var finalSum = InputLines
                 .Skip(1)
-                .Aggregate(ParseToNumbers(Input.First(), 0), (acc, rhs) =>
+                .Aggregate(ParseToNumbers(InputLines.First(), 0), (acc, rhs) =>
                 {
                     var node = acc.First;
                     while (node != null)
@@ -30,7 +30,7 @@ namespace _2021
 
         public override double PartTwo()
         {
-            return Input
+            return InputLines
                 .Permutations()
                 .SelectMany(pair => new List<(string, string)>() { pair, (pair.Item2, pair.Item1) })
                 .Aggregate(0.0, (acc, pair) =>

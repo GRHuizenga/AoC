@@ -12,7 +12,7 @@ namespace _2021
 
         public Day07() : base(2021, "day07")
         {
-            CrabPositions = Input.First().Split(',').Select(position => int.Parse(position)).OrderBy(p => p);
+            CrabPositions = InputLines.First().Split(',').Select(position => int.Parse(position)).OrderBy(p => p);
             Median = CrabPositions.ToArray()[CrabPositions.Count() / 2];
         }
 

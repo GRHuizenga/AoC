@@ -12,11 +12,11 @@ namespace _2021
 
         public Day04() : base(2021, "day04")
         {
-            DrawnNumber = Input.First().Split(',').Select(number => int.Parse(number));
-            Input = Input.Skip(1);
-            Boards = Enumerable.Range(0, Input.Count() / 6).Select(board =>
+            DrawnNumber = InputLines.First().Split(',').Select(number => int.Parse(number));
+            InputLines = InputLines.Skip(1);
+            Boards = Enumerable.Range(0, InputLines.Count() / 6).Select(board =>
             {
-                return new BingoBoard(string.Join(' ', Input.Skip(board * 6).Skip(1).Take(5)), 5);
+                return new BingoBoard(string.Join(' ', InputLines.Skip(board * 6).Skip(1).Take(5)), 5);
             }).ToList();
         }
 

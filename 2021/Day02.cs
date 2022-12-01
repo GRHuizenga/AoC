@@ -13,7 +13,7 @@ namespace _2021
 
         public Day02() : base(2021, "day02")
         {
-            Commands = Input.Select(line =>
+            Commands = InputLines.Select(line =>
             {
                 var x = line.Split(' ');
                 return new Command(x[0], int.Parse(x[1]));

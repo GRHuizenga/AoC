@@ -11,8 +11,8 @@ namespace _2021
 
         public Day14() : base(2021, "day14")
         {
-            PolymerTemplate = Input.First();
-            InsertionRules = Input
+            PolymerTemplate = InputLines.First();
+            InsertionRules = InputLines
                 .Skip(2)
                 .Select(rule => rule.Split(" -> "))
                 .ToDictionary(rule => rule[0], rule => rule[1]);

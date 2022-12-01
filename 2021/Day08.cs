@@ -12,14 +12,14 @@ namespace _2021
         public override int PartOne()
         {
             var lengths = new int[4] { 2, 3, 4, 7 };
-            return Input
+            return InputLines
                 .Select(line => line.Split(" | ")[1].Split())
                 .Aggregate(0, (acc, curr) => acc + curr.Count(output => lengths.Contains(output.Length)));
         }
 
         public override int PartTwo()
         {
-            return Input.Aggregate(0, (acc, curr) =>
+            return InputLines.Aggregate(0, (acc, curr) =>
             {
                 var inputsOutputs = curr.Split(" | ");
                 var digits = DetermineDigits(inputsOutputs[0].Split()).Select(digit => string.Join(string.Empty, digit.OrderBy(d => d))).ToArray();

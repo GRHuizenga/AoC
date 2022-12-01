@@ -26,7 +26,7 @@ namespace _2021
         {
             var cuboids = new List<Cuboid>();
             var cuboidsAfterSplit = new List<Cuboid>();
-            foreach (var instruction in Input)
+            foreach (var instruction in InputLines)
             {
                 var on = instruction.StartsWith("on");
                 var matches = Regex.Matches(instruction, @"(-?\d+)").Select(match => int.Parse(match.Value)).ToArray();

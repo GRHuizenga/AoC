@@ -14,13 +14,13 @@ namespace _2021
 
         public override int PartOne()
         {
-            var caveSystem = Input.SelectMany(line => line.ToCharArray().Select(cave => int.Parse(cave.ToString()))).ToArray();
+            var caveSystem = InputLines.SelectMany(line => line.ToCharArray().Select(cave => int.Parse(cave.ToString()))).ToArray();
             return PathFinding.Dijkstra(caveSystem, 0).distances.Last();
         }
 
         public override int PartTwo()
         {
-            var block = Input.Select(line => line.ToCharArray().Select(cave => int.Parse(cave.ToString())));
+            var block = InputLines.Select(line => line.ToCharArray().Select(cave => int.Parse(cave.ToString())));
 
             var caveSystem = new int[100, 100];
             var x = 0;

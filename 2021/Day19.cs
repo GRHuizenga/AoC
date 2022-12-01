@@ -13,7 +13,7 @@ namespace _2021
 
         public Day19() : base(2021, "day19")
         {
-            Scanners = Parse(Input);
+            Scanners = Parse(InputLines);
             LocatedScanners = Locate();
         }
 
