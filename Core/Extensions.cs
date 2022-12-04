@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Core
 {
@@ -72,6 +73,18 @@ namespace Core
             {
                 yield return @this.Skip(index).Take(windowSize);
             };
+        }
+
+        /// <summary>
+        /// Find all integers in a string.
+        /// 
+        /// Example: "2-4,6-12" becomes [2, 4, 6, 12]
+        /// </summary>
+        /// <param name="this"></param>
+        /// <returns></returns>
+        public static int[] NumbersInString(this string @this)
+        {
+            return Regex.Matches(@this, @"\d+").Select(match => int.Parse(match.Groups[0].Value)).ToArray();
         }
 
         /// <summary>
