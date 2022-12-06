@@ -8,7 +8,7 @@ namespace _2021
         {
             try
             {
-                var day = new Day05(2022, "day05");
+                var day = new Day06(2022, "day06");
                 Console.WriteLine(day.PartOne());
                 Console.WriteLine(day.PartTwo());
                 Console.ReadKey();
